@@ -1,0 +1,87 @@
+import { StackScreenProps } from "@react-navigation/stack";
+import React, { useState } from "react";
+import { StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
+
+type RootStackParamList = {
+  Home: undefined;
+  Login: undefined;
+  Dashboard: { nome: string };
+};
+
+type LoginScreenProps = StackScreenProps<RootStackParamList, 'Login'>;
+
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const [carteirinha, setCarteirinha] = useState('');
+  const [senha, setSenha] = useState('');
+
+  const handleLogin = () => {
+    navigation.navigate('Dashboard', { nome: 'Leonardo' }); // Pode personalizar o nome se necessário
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>OdontoFast.</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Carteirinha do Convênio"
+        placeholderTextColor="#bbb"
+        value={carteirinha}
+        onChangeText={setCarteirinha}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        placeholderTextColor="#bbb"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  header: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 36,
+    color: '#45B3CB',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  input: {
+    width: 315,
+    height: 52,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingLeft: 15,
+    marginBottom: 20,
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#45B3CB',
+    width: 315,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  buttonText: {
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 18,
+    color: '#fff',
+  },
+});
+
+export default LoginScreen;
