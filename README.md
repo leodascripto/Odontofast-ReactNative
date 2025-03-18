@@ -44,7 +44,7 @@ Tela inicial antes do login, apresentando uma introdução ao aplicativo.
 
 ## 🔗 Chamadas de API (Planejadas)
 
-- **API de Login (.NET)**: Responsável pela autenticação do usuário.
+- **(Ainda não implementada) API de Login (.NET)**: Responsável pela autenticação do usuário.
 - **API de Checklist (Python)**: Retorna quatro itens aleatórios do checklist.
 - **(Futuro)** Outras APIs poderão ser integradas para funcionalidades adicionais, como agendamento de consultas.
 
