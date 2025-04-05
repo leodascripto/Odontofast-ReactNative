@@ -10,7 +10,10 @@
     "splash": {
       "image": "./src/assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "extra": {
+        "apiUrl": "http://192.168.1.11:5058/api"
+      }
     },
     "ios": {
       "supportsTablet": true

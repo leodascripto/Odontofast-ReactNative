@@ -1,21 +1,55 @@
-import { StackScreenProps } from "@react-navigation/stack";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
-
-type RootStackParamList = {
-  Home: undefined;
-  Login: undefined;
-  Dashboard: { nome: string };
-};
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, Alert, Platform } from "react-native";
+import { StackScreenProps } from "@react-navigation/stack";
+import { RootStackParamList } from "../types/navigation";
+import Constants from 'expo-constants';
 
 type LoginScreenProps = StackScreenProps<RootStackParamList, 'Login'>;
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [carteirinha, setCarteirinha] = useState('');
-  const [senha, setSenha] = useState('');
+const API_URL = Platform.select({
+  ios: "http://localhost:5058/api/login",
+  android: "http://10.0.2.2:5058/api/login",
+  default: Constants.expoConfig?.extra?.apiUrl ? `${Constants.expoConfig.extra.apiUrl}/login` : null,
+});
 
-  const handleLogin = () => {
-    navigation.navigate('Dashboard', { nome: 'Leonardo' }); // Pode personalizar o nome se necessário
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const [nrCarteira, setNrCarteira] = useState('');
+  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!nrCarteira || !senha) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      return;
+    }
+
+    if (!API_URL) {
+      Alert.alert('Erro', 'API_URL não definida.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nrCarteira, senha }),
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (response.ok) {
+        navigation.navigate('Dashboard', { nome: data.nome });
+      } else {
+        Alert.alert('Erro', data.mensagem || 'Falha ao fazer login.');
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Erro detalhado:', error);
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    }
   };
 
   return (
@@ -25,8 +59,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         style={styles.input}
         placeholder="Carteirinha do Convênio"
         placeholderTextColor="#bbb"
-        value={carteirinha}
-        onChangeText={setCarteirinha}
+        value={nrCarteira}
+        onChangeText={setNrCarteira}
       />
       <TextInput
         style={styles.input}
@@ -36,8 +70,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         value={senha}
         onChangeText={setSenha}
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? "Carregando..." : "Login"}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -45,42 +79,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f0f0f0',
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    padding: 20, backgroundColor: '#f0f0f0',
   },
   header: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 36,
-    color: '#45B3CB',
-    textAlign: 'center',
-    marginBottom: 10,
+    fontFamily: 'Nunito_700Bold', fontSize: 36,
+    color: '#45B3CB', textAlign: 'center', marginBottom: 10,
   },
   input: {
-    width: 315,
-    height: 52,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingLeft: 15,
-    marginBottom: 20,
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 16,
+    width: 315, height: 52, borderColor: '#ccc',
+    borderWidth: 1, borderRadius: 10, paddingLeft: 15,
+    marginBottom: 20, fontFamily: 'Nunito_400Regular', fontSize: 16,
   },
   button: {
-    backgroundColor: '#45B3CB',
-    width: 315,
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
+    backgroundColor: '#45B3CB', width: 315, height: 52,
+    justifyContent: 'center', alignItems: 'center', borderRadius: 10,
   },
   buttonText: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 18,
-    color: '#fff',
+    fontFamily: 'Nunito_700Bold', fontSize: 18, color: '#fff',
   },
 });
 
