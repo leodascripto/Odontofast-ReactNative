@@ -1,0 +1,29 @@
+# Dependências principais
+@expo-google-fonts/nunito
+@expo/metro-runtime
+@react-navigation/native
+@react-navigation/stack
+axios
+expo
+expo-checkbox
+expo-font
+expo-splash-screen
+expo-status-bar
+react
+react-dom
+react-native
+react-native-gesture-handler
+react-native-reanimated
+react-native-safe-area-context
+react-native-screens
+react-native-web
+
+# Dependências de desenvolvimento
+@react-native-async-storage/async-storage
+@babel/core
+@types/react
+@types/react-native
+typescript
+
+# Comando para instalar todas as dependências:
+# npm install $(grep -v "^#" dependencies.txt | xargs)
