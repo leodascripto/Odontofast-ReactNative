@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({
           accessibilityLabel="Botão voltar"
           accessibilityHint="Toque para voltar à tela anterior"
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <Text style={styles.backButtonText}>Voltar</Text>
         </TouchableOpacity>
       )}
       
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   backButtonText: {
-    fontSize: 24,
+    fontSize: 16,
     color: "#45B3CB",
     fontFamily: "Nunito_700Bold",
   },

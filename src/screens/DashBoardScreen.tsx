@@ -210,7 +210,10 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
           </View>
           <View style={styles.appointmentDetails}>
             <Text style={styles.appointmentDoctor}>Dr. Igor Guilherme</Text>
-            <Text style={styles.appointmentTime}>⏰ 08:45</Text>
+            <View style={styles.timeContainer}>
+              <Text style={styles.timeIcon}>⏰</Text>
+              <Text style={styles.appointmentTime}>08:45</Text>
+            </View>
           </View>
           <TouchableOpacity 
             style={styles.appointmentButton}
@@ -352,6 +355,14 @@ const styles = StyleSheet.create({
     fontFamily: "Nunito_400Regular",
     fontSize: 16,
     color: "#666",
+  },
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timeIcon: {
+    fontSize: 16,
+    marginRight: 5,
   },
   appointmentTime: {
     fontFamily: "Nunito_700Bold",

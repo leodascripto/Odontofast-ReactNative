@@ -113,7 +113,10 @@ const ChecklistScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Checklist Diário" iconSource={require("../assets/images/CheckListPage/checklistpageicon.png")} />
+      <Header 
+        title="Checklist Diário" 
+        iconSource={require("../assets/images/CheckListPage/checklistpageicon.png")} 
+      />
 
       {/* Barra de Progresso */}
       <View style={styles.progressContainer}>
@@ -126,7 +129,7 @@ const ChecklistScreen: React.FC = () => {
           />
         </View>
         <Text style={styles.progressText}>
-          {Math.round(progress * 100)}% completo
+          <Text>{Math.round(progress * 100)}% completo</Text>
         </Text>
         <Text style={styles.motivationalText}>{getMotivationalMessage()}</Text>
       </View>
