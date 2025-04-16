@@ -4,7 +4,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet, LogBox, ActivityIndicator } from 'react-native';
 import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
-import * as SplashScreen from 'expo-splash-screen';
 
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
@@ -22,9 +21,6 @@ import { isAuthenticated, getCurrentUser } from './src/services/authService';
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ]);
-
-// Manter a tela de splash visível até que os recursos estejam carregados
-SplashScreen.preventAutoHideAsync();
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -67,13 +63,7 @@ export default function App() {
     checkAuth();
   }, []);
 
-  // Callback para esconder a tela de splash quando os recursos estiverem prontos
-  const onLayoutRootView = React.useCallback(async () => {
-    if (fontsLoaded && initialRoute) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, initialRoute]);
-
+  // Loading screen enquanto os recursos carregam
   if (!fontsLoaded || !initialRoute) {
     return (
       <View style={styles.loadingContainer}>
@@ -84,7 +74,7 @@ export default function App() {
 
   return (
     <AccessibilityProvider>
-      <View style={styles.container} onLayout={onLayoutRootView}>
+      <View style={styles.container}>
         <NavigationContainer>
           <StatusBar style="auto" />
           <Stack.Navigator 
@@ -92,9 +82,8 @@ export default function App() {
             screenOptions={{
               headerShown: false, // Ocultar o cabeçalho padrão, usaremos nosso componente personalizado
               cardStyle: { backgroundColor: '#f0f0f0' },
+              animation: 'default',
               gestureEnabled: true,
-              // As propriedades de animação devem estar dentro de 'animation'
-              animation: 'default'
             }}
           >
             <Stack.Screen name="Home" component={HomeScreen} />

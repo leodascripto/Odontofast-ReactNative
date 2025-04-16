@@ -3,6 +3,7 @@
 @expo/metro-runtime
 @react-navigation/native
 @react-navigation/stack
+@react-native-async-storage/async-storage@1.23.1
 axios
 expo
 expo-checkbox
@@ -11,19 +12,19 @@ expo-splash-screen
 expo-status-bar
 react
 react-dom
-react-native
-react-native-gesture-handler
-react-native-reanimated
-react-native-safe-area-context
-react-native-screens
+react-native@0.76.9
+react-native-gesture-handler@~2.20.2
+react-native-reanimated@~3.16.1
+react-native-safe-area-context@4.12.0
+react-native-screens@~4.4.0
 react-native-web
 
 # Dependências de desenvolvimento
-@react-native-async-storage/async-storage
 @babel/core
 @types/react
 @types/react-native
 typescript
+concurrently
 
 # Comando para instalar todas as dependências:
 # npm install $(grep -v "^#" dependencies.txt | xargs)
