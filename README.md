@@ -1,6 +1,11 @@
 # OdontoFast
 ![Capa do projeto](https://github.com/leodascripto/Odontofast-ReactNative/blob/master/src/assets/images/readmepics/capa.jpg?raw=true)
 
+- **Felipe Amador** - RM 553528
+- **Leonardo de Oliveira** - RM554024
+- **Sara Gabrielle Sousa** - RM552656
+
+<br>
 OdontoFast é um aplicativo móvel desenvolvido com React Native (Expo) para ajudar os clientes da OdontoPrev a gerenciar suas consultas odontológicas e receber notificações sobre saúde bucal. O app oferece uma experiência fluida com recursos modernos de navegação e usabilidade.
 
 ## 📌 Funcionalidades
