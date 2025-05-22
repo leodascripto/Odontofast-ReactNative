@@ -74,7 +74,7 @@ dotnet restore
 
 # Configurar .env com string de conexão Oracle
 # Rodar API
-dotnet run
+dotnet watch run
 # API disponível em: http://localhost:5058
 ```
 
