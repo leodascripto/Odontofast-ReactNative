@@ -65,9 +65,40 @@ export const getPythonApiBaseUrl = (): string => {
 
 // Endpoints específicos
 export const API_ENDPOINTS = {
+  // 🔑 Endpoints existentes (mantidos)
   login: `${getApiBaseUrl()}/login`,
   user: (id: number) => `${getApiBaseUrl()}/Usuario/${id}`,
   checklist: `${getPythonApiBaseUrl()}/checklist`,
+  
+  // 🖼️ Novos endpoints para avatar
+  avatar: {
+    get: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}`,
+    create: () => `${getApiBaseUrl()}/ImagemUsuario`,
+    update: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}`,
+    delete: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}`,
+    exists: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}/exists`,
+  },
+  
+  // 🔮 Futuros endpoints (preparados para expansão)
+  usuario: {
+    getById: (id: number) => `${getApiBaseUrl()}/Usuario/${id}`,
+    update: (id: number) => `${getApiBaseUrl()}/Usuario/${id}`,
+    // Adicione outros endpoints de usuário conforme necessário
+  },
+  
+  // 📊 Outros endpoints que podem ser adicionados no futuro
+  consultas: {
+    // getByUserId: (userId: number) => `${getApiBaseUrl()}/Consultas/usuario/${userId}`,
+    // create: () => `${getApiBaseUrl()}/Consultas`,
+    // update: (id: number) => `${getApiBaseUrl()}/Consultas/${id}`,
+    // delete: (id: number) => `${getApiBaseUrl()}/Consultas/${id}`,
+  },
+  
+  // 🔔 Endpoints de notificações (preparados)
+  notificacoes: {
+    // getByUserId: (userId: number) => `${getApiBaseUrl()}/Notificacoes/usuario/${userId}`,
+    // markAsRead: (id: number) => `${getApiBaseUrl()}/Notificacoes/${id}/read`,
+  }
 };
 
 export default API_ENDPOINTS;
