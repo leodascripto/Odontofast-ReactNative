@@ -65,17 +65,26 @@ export const getPythonApiBaseUrl = (): string => {
 
 // Endpoints específicos
 export const API_ENDPOINTS = {
-  // 🔑 Endpoints existentes (mantidos)
+  // 🔑 Endpoints existentes (mantidos sem alteração)
   login: `${getApiBaseUrl()}/login`,
   user: (id: number) => `${getApiBaseUrl()}/Usuario/${id}`,
   checklist: `${getPythonApiBaseUrl()}/checklist`,
   
-  // 🖼️ Novos endpoints para avatar
+  // 🖼️ Endpoints para avatar - integrados com sua API .NET
   avatar: {
+    // GET /api/ImagemUsuario/{idUsuario} - Obtém a imagem de perfil de um usuário pelo ID
     get: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}`,
+    
+    // POST /api/ImagemUsuario - Cria uma nova imagem de perfil para um usuário
     create: () => `${getApiBaseUrl()}/ImagemUsuario`,
+    
+    // PUT /api/ImagemUsuario/{idUsuario} - Atualiza a imagem de perfil de um usuário
     update: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}`,
+    
+    // DELETE /api/ImagemUsuario/{idUsuario} - Remove a imagem de perfil de um usuário
     delete: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}`,
+    
+    // GET /api/ImagemUsuario/{idUsuario}/exists - Verifica se um usuário possui imagem de perfil
     exists: (userId: number) => `${getApiBaseUrl()}/ImagemUsuario/${userId}/exists`,
   },
   
@@ -84,6 +93,18 @@ export const API_ENDPOINTS = {
     getById: (id: number) => `${getApiBaseUrl()}/Usuario/${id}`,
     update: (id: number) => `${getApiBaseUrl()}/Usuario/${id}`,
     // Adicione outros endpoints de usuário conforme necessário
+  },
+  
+  // 🤖 Endpoints de IA Odontológica (preparados para futura integração)
+  ia: {
+    // POST /api/IAOdontologica/prever-tratamento - Prediz duração do tratamento
+    preverTratamento: () => `${getApiBaseUrl()}/IAOdontologica/prever-tratamento`,
+    
+    // POST /api/IAOdontologica/recomendar - Gera recomendações personalizadas
+    recomendar: () => `${getApiBaseUrl()}/IAOdontologica/recomendar`,
+    
+    // POST /api/IAOdontologica/treinar-modelo-duracao - Treina modelo de duração
+    treinarModelo: () => `${getApiBaseUrl()}/IAOdontologica/treinar-modelo-duracao`,
   },
   
   // 📊 Outros endpoints que podem ser adicionados no futuro
@@ -98,6 +119,12 @@ export const API_ENDPOINTS = {
   notificacoes: {
     // getByUserId: (userId: number) => `${getApiBaseUrl()}/Notificacoes/usuario/${userId}`,
     // markAsRead: (id: number) => `${getApiBaseUrl()}/Notificacoes/${id}/read`,
+  },
+  
+  // 📈 Endpoints de progresso (já existe um ProgressoController)
+  progresso: {
+    // POST /api/Progresso - Processa progresso do usuário
+    processar: () => `${getApiBaseUrl()}/Progresso`,
   }
 };
 

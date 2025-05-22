@@ -54,23 +54,29 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     try {
       if (!userId) return;
 
-      // Primeiro tenta da API
+      console.log(`🔍 Carregando avatar para usuário ${userId}`);
+      
+      // Tenta carregar da API através do avatarService
       const avatarFromAPI = await avatarService.getUserAvatar(userId);
       
       if (avatarFromAPI) {
+        console.log(`✅ Avatar encontrado: ${avatarFromAPI}`);
         setAvatarUri(avatarFromAPI);
         setHasCustomAvatar(true);
         return;
       }
 
-      // Fallback: AsyncStorage local
+      console.log(`ℹ️ Nenhum avatar encontrado para usuário ${userId}`);
+      
+      // Fallback: AsyncStorage local (mantido para compatibilidade)
       const savedUri = await AsyncStorage.getItem(`${USER_AVATAR_KEY}_${userId}`);
       if (savedUri) {
+        console.log(`💾 Avatar carregado do cache local: ${savedUri}`);
         setAvatarUri(savedUri);
         setHasCustomAvatar(true);
       }
     } catch (error) {
-      console.error('Erro ao carregar avatar:', error);
+      console.error('❌ Erro ao carregar avatar:', error);
     }
   };
 
@@ -82,11 +88,13 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
       const key = `${USER_AVATAR_KEY}_${userId}`;
       if (uri) {
         await AsyncStorage.setItem(key, uri);
+        console.log(`💾 Avatar salvo localmente: ${key}`);
       } else {
         await AsyncStorage.removeItem(key);
+        console.log(`🗑️ Avatar removido localmente: ${key}`);
       }
     } catch (error) {
-      console.error('Erro ao salvar avatar localmente:', error);
+      console.error('❌ Erro ao salvar avatar localmente:', error);
     }
   };
 
@@ -132,7 +140,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         await handleImageUpload(imageData);
       }
     } catch (error) {
-      console.error('Erro ao selecionar imagem:', error);
+      console.error('❌ Erro ao selecionar imagem:', error);
       Alert.alert('Erro', 'Falha ao selecionar a imagem.');
     }
   };
@@ -171,7 +179,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         await handleImageUpload(imageData);
       }
     } catch (error) {
-      console.error('Erro ao tirar foto:', error);
+      console.error('❌ Erro ao tirar foto:', error);
       Alert.alert('Erro', 'Falha ao tirar a foto.');
     }
   };
@@ -183,10 +191,18 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
       return;
     }
 
+    // Valida o arquivo antes de enviar
+    if (!avatarService.validateImageFile(imageData)) {
+      Alert.alert('Erro', 'Tipo de arquivo não suportado. Use apenas imagens JPG, PNG ou GIF.');
+      return;
+    }
+
     setUploading(true);
     setModalVisible(false);
 
     try {
+      console.log(`🔄 Fazendo upload do avatar para usuário ${userId}`);
+      
       // Usa o avatarService para fazer upload
       const result = await avatarService.uploadAvatar({
         userId: userId,
@@ -198,6 +214,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
       });
       
       if (result.success) {
+        console.log(`✅ Upload bem-sucedido: ${result.message}`);
+        
         setAvatarUri(result.avatarUrl || imageData.uri);
         setHasCustomAvatar(true);
         
@@ -207,13 +225,13 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         // Callback para o componente pai
         onImageChange?.(result.avatarUrl || imageData.uri);
         
-        console.log(`✅ Avatar ${hasCustomAvatar ? 'atualizado' : 'definido'} com sucesso:`, result.avatarUrl);
-        Alert.alert('Sucesso! 🎉', result.message || 'Foto do perfil atualizada com sucesso!');
+        Alert.alert('Sucesso! 🎉', result.message);
       } else {
-        Alert.alert('Erro', result.message || 'Falha ao salvar a imagem.');
+        console.error(`❌ Falha no upload: ${result.message}`);
+        Alert.alert('Erro', result.message);
       }
     } catch (error) {
-      console.error('Erro no upload:', error);
+      console.error('❌ Erro no upload:', error);
       Alert.alert('Erro', 'Falha ao processar a imagem.');
     } finally {
       setUploading(false);
@@ -239,10 +257,14 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
             setUploading(true);
             
             try {
+              console.log(`🗑️ Removendo avatar do usuário ${userId}`);
+              
               // Usa o avatarService para deletar
               const deleted = await avatarService.deleteUserAvatar(userId);
               
               if (deleted) {
+                console.log('✅ Avatar removido com sucesso');
+                
                 setAvatarUri(null);
                 setHasCustomAvatar(false);
                 
@@ -252,13 +274,12 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
                 // Callback para o componente pai
                 onImageChange?.(null);
                 
-                console.log('🗑️ Avatar removido com sucesso');
                 Alert.alert('Sucesso! ✨', 'Foto do perfil removida com sucesso.');
               } else {
                 Alert.alert('Erro', 'Falha ao remover a foto.');
               }
             } catch (error) {
-              console.error('Erro ao remover avatar:', error);
+              console.error('❌ Erro ao remover avatar:', error);
               Alert.alert('Erro', 'Falha ao remover a foto.');
             } finally {
               setUploading(false);
@@ -286,8 +307,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
       // Se não tem avatar, abre diretamente o modal de seleção
       setModalVisible(true);
     }
-  };uploadedUri);
-        
+  };
+
   return (
     <>
       <TouchableOpacity 
