@@ -29,7 +29,7 @@ OdontoFast é um aplicativo móvel desenvolvido com React Native (Expo) para aju
 ## 🌐 APIs e Repositórios
 
 ### 🔑 **API .NET Principal**
-**Repositório**: [OdontoFast-API-dotnet](https://github.com/leodascripto/OdontoFast-API-dotnet)  
+**Repositório**: [OdontoFast-API-dotnet](https://github.com/leodascripto/OdontoFast-dotnet-API)  
 **Base URL**: `http://localhost:5058/api`
 
 **Principais Endpoints:**
@@ -204,7 +204,7 @@ A API .NET inclui recursos avançados como:
 - **Sistema de Recomendações**: Sugestões personalizadas
 - **Modelos de Machine Learning**: Treinamento automático
 
-Veja mais detalhes no [repositório da API](https://github.com/leodascripto/OdontoFast-API-dotnet).
+Veja mais detalhes no [repositório da API](https://github.com/leodascripto/OdontoFast-dotnet-API).
 
 ## 📱 Compatibilidade
 
