@@ -65,45 +65,60 @@ class AvatarService {
     try {
       const token = await this.getAuthToken();
       
-      // Cria FormData para upload multipart
-      const formData = new FormData();
+      // Primeiro, verifica se já existe uma imagem para este usuário
+      const existingImage = await this.getUserAvatar(uploadData.userId);
       
-      // Adiciona o arquivo
-      formData.append('file', {
-        uri: uploadData.file.uri,
-        type: uploadData.file.type,
-        name: uploadData.file.name,
-      } as any);
-      
-      // Adiciona o userId
-      formData.append('userId', uploadData.userId.toString());
+      // Dados para enviar à API (usando string base64 do caminho da imagem)
+      const imagePayload = {
+        idUsuario: uploadData.userId,
+        caminhoImg: uploadData.file.uri // Por enquanto, armazena a URI local
+      };
 
-      // Faz a requisição para API .NET
-      const response = await fetch(`${this.baseUrl}/usuario/avatar/upload`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-        body: formData,
-      });
+      let response;
+      let apiUrl;
 
-      const result = await response.json();
+      if (existingImage) {
+        // Se já existe, atualiza (PUT)
+        apiUrl = `${this.baseUrl}/ImagemUsuario/${uploadData.userId}`;
+        response = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            caminhoImg: uploadData.file.uri
+          }),
+        });
+      } else {
+        // Se não existe, cria (POST)
+        apiUrl = `${this.baseUrl}/ImagemUsuario`;
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+          },
+          body: JSON.stringify(imagePayload),
+        });
+      }
 
       if (response.ok) {
+        const result = await response.json();
         // Salva no cache local
-        await this.saveAvatarToCache(uploadData.userId, result.avatarUrl);
+        await this.saveAvatarToCache(uploadData.userId, uploadData.file.uri);
         
         return {
           success: true,
-          message: 'Avatar enviado com sucesso',
-          data: result.data,
-          avatarUrl: result.avatarUrl,
+          message: 'Avatar salvo com sucesso',
+          data: result,
+          avatarUrl: uploadData.file.uri,
         };
       } else {
+        const errorResult = await response.json();
         return {
           success: false,
-          message: result.message || 'Erro ao enviar avatar',
+          message: errorResult.Message || 'Erro ao salvar avatar',
         };
       }
     } catch (error) {
@@ -135,8 +150,8 @@ class AvatarService {
 
       const token = await this.getAuthToken();
 
-      // Faz requisição para API .NET
-      const response = await fetch(`${this.baseUrl}/usuario/${userId}/avatar`, {
+      // Faz requisição para API .NET usando o endpoint correto
+      const response = await fetch(`${this.baseUrl}/ImagemUsuario/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -147,11 +162,14 @@ class AvatarService {
       if (response.ok) {
         const result = await response.json();
         
-        if (result.avatarUrl) {
+        if (result.caminhoImg) {
           // Salva no cache
-          await this.saveAvatarToCache(userId, result.avatarUrl);
-          return result.avatarUrl;
+          await this.saveAvatarToCache(userId, result.caminhoImg);
+          return result.caminhoImg;
         }
+      } else if (response.status === 404) {
+        // Usuário não tem avatar
+        return null;
       }
 
       return null;
@@ -172,8 +190,8 @@ class AvatarService {
     try {
       const token = await this.getAuthToken();
 
-      // Faz requisição DELETE para API .NET
-      const response = await fetch(`${this.baseUrl}/usuario/${userId}/avatar`, {
+      // Faz requisição DELETE para API .NET usando o endpoint correto
+      const response = await fetch(`${this.baseUrl}/ImagemUsuario/${userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -183,6 +201,10 @@ class AvatarService {
 
       if (response.ok) {
         // Remove do cache local
+        await this.removeAvatarFromCache(userId);
+        return true;
+      } else if (response.status === 404) {
+        // Avatar não encontrado, mas consideramos sucesso
         await this.removeAvatarFromCache(userId);
         return true;
       }
@@ -219,7 +241,36 @@ class AvatarService {
   }
 
   /**
-   * Obtém histórico de avatares do usuário (para futuras implementações)
+   * Verifica se o usuário possui avatar
+   * @param userId ID do usuário
+   * @returns Promise<boolean> indicando se possui avatar
+   */
+  async checkUserHasAvatar(userId: number): Promise<boolean> {
+    try {
+      const token = await this.getAuthToken();
+
+      // Usa o endpoint exists da API
+      const response = await fetch(`${this.baseUrl}/ImagemUsuario/${userId}/exists`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return result.possuiImagem || false;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Erro ao verificar se usuário possui avatar:', error);
+      // Fallback: verifica no cache local
+      const cachedAvatar = await this.getAvatarFromCache(userId);
+      return !!cachedAvatar;
+    }
+  }
    * @param userId ID do usuário
    * @returns Promise com array de avatares
    */

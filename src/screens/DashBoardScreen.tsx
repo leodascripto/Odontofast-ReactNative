@@ -43,11 +43,17 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
   const loadUserData = async () => {
     try {
       const userData = await getCurrentUser();
+      console.log("🔍 Dados do usuário do AsyncStorage:", userData);
+      
       if (userData?.id) {
         setUserId(userData.id);
+      } else {
+        // Se não tem ID no AsyncStorage, usa um padrão
+        setUserId(1);
       }
     } catch (error) {
       console.error("Erro ao carregar dados do usuário:", error);
+      setUserId(1); // ID padrão
     }
   };
 
@@ -63,17 +69,22 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
 
       if (response.ok) {
         const data = await response.json();
-        setNome(data.nomeUsuario);
-        setUserId(data.id);
+        console.log("🔍 Dados do usuário da API:", data);
+        
+        // Mapeia os campos corretos da API
+        setNome(data.nomeUsuario || "Usuário");
+        setUserId(data.idUsuario || 1); // IdUsuario é o campo correto
       } else {
         console.error("Erro na resposta da API:", response.status);
-        // Definir um nome padrão se não conseguir da API
+        // Definir valores padrão se não conseguir da API
         setNome("Usuário");
+        setUserId(1);
       }
     } catch (error) {
       console.error("Erro ao buscar dados do usuário:", error);
-      // Definir um nome padrão se não conseguir da API
+      // Definir valores padrão se não conseguir da API
       setNome("Usuário");
+      setUserId(1);
     } finally {
       setLoading(false);
     }
@@ -159,9 +170,10 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
 
   // Callback para quando o avatar mudar
   const handleAvatarChange = (imageUri: string | null) => {
-    console.log('Avatar alterado:', imageUri);
+    console.log('🖼️ Avatar alterado para:', imageUri);
     // Aqui você pode fazer outras ações quando o avatar mudar
     // Como sincronizar com o estado global da aplicação
+    // Ou mostrar uma notificação de sucesso
   };
 
   return (

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { avatarService } from '../services/avatarService';
 
 // Tipos para o componente
 interface UserAvatarProps {
@@ -43,13 +44,27 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   // Carrega a imagem salva ao inicializar o componente
   useEffect(() => {
-    loadSavedAvatar();
+    if (userId) {
+      loadSavedAvatar();
+    }
   }, [userId]);
 
-  // Carrega avatar salvo no AsyncStorage
+  // Carrega avatar salvo (API ou cache local)
   const loadSavedAvatar = async () => {
     try {
-      const savedUri = await AsyncStorage.getItem(`${USER_AVATAR_KEY}_${userId || 'default'}`);
+      if (!userId) return;
+
+      // Primeiro tenta da API
+      const avatarFromAPI = await avatarService.getUserAvatar(userId);
+      
+      if (avatarFromAPI) {
+        setAvatarUri(avatarFromAPI);
+        setHasCustomAvatar(true);
+        return;
+      }
+
+      // Fallback: AsyncStorage local
+      const savedUri = await AsyncStorage.getItem(`${USER_AVATAR_KEY}_${userId}`);
       if (savedUri) {
         setAvatarUri(savedUri);
         setHasCustomAvatar(true);
@@ -59,70 +74,20 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     }
   };
 
-  // Salva avatar no AsyncStorage
-  const saveAvatar = async (uri: string | null) => {
+  // Salva avatar no AsyncStorage local (backup)
+  const saveAvatarLocally = async (uri: string | null) => {
     try {
-      const key = `${USER_AVATAR_KEY}_${userId || 'default'}`;
+      if (!userId) return;
+      
+      const key = `${USER_AVATAR_KEY}_${userId}`;
       if (uri) {
         await AsyncStorage.setItem(key, uri);
       } else {
         await AsyncStorage.removeItem(key);
       }
     } catch (error) {
-      console.error('Erro ao salvar avatar:', error);
+      console.error('Erro ao salvar avatar localmente:', error);
     }
-  };
-
-  // Função para fazer upload da imagem para a API (preparada para implementação futura)
-  const uploadImageToAPI = async (imageData: ImageData): Promise<string | null> => {
-    // TODO: Implementar quando a API .NET estiver pronta
-    // const formData = new FormData();
-    // formData.append('file', {
-    //   uri: imageData.uri,
-    //   type: imageData.type,
-    //   name: imageData.fileName || 'avatar.jpg',
-    // } as any);
-    // formData.append('userId', userId?.toString() || '');
-    
-    // try {
-    //   const response = await fetch(`${API_BASE_URL}/usuario/avatar`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'multipart/form-data',
-    //       'Authorization': `Bearer ${token}`,
-    //     },
-    //     body: formData,
-    //   });
-    
-    //   if (response.ok) {
-    //     const result = await response.json();
-    //     return result.avatarUrl;
-    //   }
-    // } catch (error) {
-    //   console.error('Erro no upload:', error);
-    // }
-
-    // Por enquanto, retorna a URI local
-    return imageData.uri;
-  };
-
-  // Função para deletar imagem da API (preparada para implementação futura)
-  const deleteImageFromAPI = async (): Promise<boolean> => {
-    // TODO: Implementar quando a API .NET estiver pronta
-    // try {
-    //   const response = await fetch(`${API_BASE_URL}/usuario/${userId}/avatar`, {
-    //     method: 'DELETE',
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //     },
-    //   });
-    //   return response.ok;
-    // } catch (error) {
-    //   console.error('Erro ao deletar avatar:', error);
-    //   return false;
-    // }
-
-    return true; // Por enquanto, sempre retorna sucesso
   };
 
   // Função para obter as permissões necessárias
@@ -213,29 +178,43 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   // Manipula o upload da imagem
   const handleImageUpload = async (imageData: ImageData) => {
+    if (!userId) {
+      Alert.alert('Erro', 'ID do usuário não disponível.');
+      return;
+    }
+
     setUploading(true);
     setModalVisible(false);
 
     try {
-      // Upload para API (quando disponível) ou salva localmente
-      const uploadedUri = await uploadImageToAPI(imageData);
+      // Usa o avatarService para fazer upload
+      const result = await avatarService.uploadAvatar({
+        userId: userId,
+        file: {
+          uri: imageData.uri,
+          type: imageData.type,
+          name: imageData.fileName || 'avatar.jpg'
+        }
+      });
       
-      if (uploadedUri) {
-        setAvatarUri(uploadedUri);
+      if (result.success) {
+        setAvatarUri(result.avatarUrl || imageData.uri);
         setHasCustomAvatar(true);
-        await saveAvatar(uploadedUri);
+        
+        // Salva backup local
+        await saveAvatarLocally(result.avatarUrl || imageData.uri);
         
         // Callback para o componente pai
-        onImageChange?.(uploadedUri);
+        onImageChange?.(result.avatarUrl || imageData.uri);
         
-        console.log(`✅ Avatar ${hasCustomAvatar ? 'atualizado' : 'definido'} com sucesso:`, uploadedUri);
-        Alert.alert('Sucesso! 🎉', 'Foto do perfil atualizada com sucesso!');
+        console.log(`✅ Avatar ${hasCustomAvatar ? 'atualizado' : 'definido'} com sucesso:`, result.avatarUrl);
+        Alert.alert('Sucesso! 🎉', result.message || 'Foto do perfil atualizada com sucesso!');
       } else {
-        Alert.alert('Erro', 'Falha ao fazer upload da imagem.');
+        Alert.alert('Erro', result.message || 'Falha ao salvar a imagem.');
       }
     } catch (error) {
       console.error('Erro no upload:', error);
-      Alert.alert('Erro', 'Falha ao salvar a imagem.');
+      Alert.alert('Erro', 'Falha ao processar a imagem.');
     } finally {
       setUploading(false);
     }
@@ -243,6 +222,11 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   // Remove a foto do perfil
   const removeAvatar = async () => {
+    if (!userId) {
+      Alert.alert('Erro', 'ID do usuário não disponível.');
+      return;
+    }
+
     Alert.alert(
       'Remover Foto',
       'Tem certeza que deseja remover sua foto do perfil?',
@@ -255,13 +239,15 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
             setUploading(true);
             
             try {
-              // Deleta da API (quando disponível)
-              const deleted = await deleteImageFromAPI();
+              // Usa o avatarService para deletar
+              const deleted = await avatarService.deleteUserAvatar(userId);
               
               if (deleted) {
                 setAvatarUri(null);
                 setHasCustomAvatar(false);
-                await saveAvatar(null);
+                
+                // Remove backup local
+                await saveAvatarLocally(null);
                 
                 // Callback para o componente pai
                 onImageChange?.(null);
@@ -300,14 +286,14 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
       // Se não tem avatar, abre diretamente o modal de seleção
       setModalVisible(true);
     }
-  };
-
+  };uploadedUri);
+        
   return (
     <>
       <TouchableOpacity 
         style={[styles.avatarContainer, { width: size, height: size }]}
         onPress={showActionOptions}
-        disabled={uploading}
+        disabled={uploading || !userId}
         accessibilityLabel="Foto do perfil"
         accessibilityHint="Toque para alterar sua foto do perfil"
       >
@@ -317,20 +303,22 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
           resizeMode="cover"
         />
         
-        {/* Ícone de edição */}
-        <View style={[styles.editIcon, { 
-          width: size * 0.3, 
-          height: size * 0.3, 
-          borderRadius: (size * 0.3) / 2,
-          bottom: -2,
-          right: -2
-        }]}>
-          {uploading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={[styles.editIconText, { fontSize: size * 0.15 }]}>✏️</Text>
-          )}
-        </View>
+        {/* Ícone de edição - só mostra se tem userId */}
+        {userId && (
+          <View style={[styles.editIcon, { 
+            width: size * 0.3, 
+            height: size * 0.3, 
+            borderRadius: (size * 0.3) / 2,
+            bottom: -2,
+            right: -2
+          }]}>
+            {uploading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={[styles.editIconText, { fontSize: size * 0.15 }]}>✏️</Text>
+            )}
+          </View>
+        )}
       </TouchableOpacity>
 
       {/* Modal de seleção de imagem */}
