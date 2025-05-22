@@ -12,7 +12,8 @@ import {
   Alert 
 } from "react-native";
 import { RootStackParamList } from "../types/navigation";
-import { logout } from "../services/authService";
+import { logout, getCurrentUser } from "../services/authService";
+import UserAvatar from "../components/UserAvatar";
 
 const API_URL = "http://10.0.2.2:5058/api/Usuario/1"; // URL da API para buscar o usuário
 
@@ -20,6 +21,7 @@ type DashBoardScreenProps = StackScreenProps<RootStackParamList, "Dashboard">;
 
 const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) => {
   const [nome, setNome] = useState<string>("");
+  const [userId, setUserId] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Obter a largura da tela para layout responsivo
@@ -30,11 +32,24 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
   useEffect(() => {
     if (route.params?.nome) {
       setNome(route.params.nome);
+      loadUserData();
       setLoading(false);
     } else {
       fetchUserData();
     }
   }, [route.params]);
+
+  // Carrega dados do usuário do AsyncStorage
+  const loadUserData = async () => {
+    try {
+      const userData = await getCurrentUser();
+      if (userData?.id) {
+        setUserId(userData.id);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados do usuário:", error);
+    }
+  };
 
   // Função para buscar dados do usuário da API
   const fetchUserData = async () => {
@@ -49,6 +64,7 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
       if (response.ok) {
         const data = await response.json();
         setNome(data.nomeUsuario);
+        setUserId(data.id);
       } else {
         console.error("Erro na resposta da API:", response.status);
         // Definir um nome padrão se não conseguir da API
@@ -141,10 +157,17 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
     }
   };
 
+  // Callback para quando o avatar mudar
+  const handleAvatarChange = (imageUri: string | null) => {
+    console.log('Avatar alterado:', imageUri);
+    // Aqui você pode fazer outras ações quando o avatar mudar
+    // Como sincronizar com o estado global da aplicação
+  };
+
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.container}>
-        {/* Cabeçalho com saudação */}
+        {/* Cabeçalho com saudação e avatar */}
         <View style={styles.headerContainer}>
           <View style={styles.greetingContainer}>
             {loading ? (
@@ -157,9 +180,12 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
             )}
           </View>
           
-          <Image 
-            source={require("../assets/images/fastinho.png")}
-            style={styles.avatarImage}
+          {/* Novo componente UserAvatar substituindo a imagem estática */}
+          <UserAvatar
+            userId={userId}
+            defaultImage={require("../assets/images/fastinho.png")}
+            size={90} // Ligeiramente maior que o original (60)
+            onImageChange={handleAvatarChange}
           />
         </View>
 
@@ -175,7 +201,7 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
                 { backgroundColor: button.bgColor, width: buttonWidth }
               ]}
               onPress={() => {
-                // Corrigido: Navegação com base no screen definido
+                // Navegação com base no screen definido
                 switch (button.screen) {
                   case "FichaOdontoPage":
                     navigation.navigate("FichaOdontoPage");
@@ -222,6 +248,7 @@ const DashboardScreen: React.FC<DashBoardScreenProps> = ({ navigation, route }) 
             <Text style={styles.appointmentButtonText}>Ver detalhes</Text>
           </TouchableOpacity>
         </View>
+        
         {/* Botão de Logout */}
         <TouchableOpacity 
           style={styles.logoutButton}
@@ -267,12 +294,6 @@ const styles = StyleSheet.create({
     fontFamily: "Nunito_700Bold",
     fontSize: 28,
     color: "#45B3CB",
-  },
-  avatarImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginLeft: 10,
   },
   sectionTitle: {
     fontFamily: "Nunito_700Bold",

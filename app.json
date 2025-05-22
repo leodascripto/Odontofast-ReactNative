@@ -29,7 +29,14 @@
       "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O aplicativo precisa acessar suas fotos para alterar o avatar.",
+          "cameraPermission": "O aplicativo precisa acessar sua câmera para tirar fotos do avatar."
+        }
+      ]
     ]
   }
 }
