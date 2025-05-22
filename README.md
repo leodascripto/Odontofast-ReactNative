@@ -227,5 +227,5 @@ Veja mais detalhes no [repositório da API](https://github.com/leodascripto/Odon
 **OdontoFast** - Transformando o cuidado odontológico através da tecnologia! 🦷✨
 
 ### 🔗 Links Importantes
-- [API .NET Repository](https://github.com/leodascripto/OdontoFast-API-dotnet)
-- [Documentação da API](https://github.com/leodascripto/OdontoFast-API-dotnet#readme)
+- [API .NET Repository](https://github.com/leodascripto/OdontoFast-dotnet-API)
+- [Documentação da API](https://github.com/leodascripto/OdontoFast-dotnet-API#readme)
