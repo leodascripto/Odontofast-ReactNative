@@ -1,6 +1,7 @@
 # OdontoFast
 ![Capa do projeto](https://github.com/leodascripto/Odontofast-ReactNative/blob/master/src/assets/images/readmepics/capa.jpg?raw=true)
 
+- **2TDSPS**
 - **Felipe Amador** - RM 553528
 - **Leonardo de Oliveira** - RM554024
 - **Sara Gabrielle Sousa** - RM552656
